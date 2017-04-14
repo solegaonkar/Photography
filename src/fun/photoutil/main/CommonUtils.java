@@ -21,12 +21,20 @@ public class CommonUtils {
 
 	public static void init(String logFilePath) throws Exception {
 		bw = new BufferedWriter(new FileWriter(logFilePath));
+		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+			public void run() {
+				CommonUtils.close();
+			}
+		}));
 	}
 
-	public static void close() throws Exception {
-		if (bw != null) {
-			bw.flush();
-			bw.close();
+	public static void close() {
+		try {
+			if (bw != null) {
+				bw.flush();
+				bw.close();
+			}
+		} catch (Exception e) {
 		}
 	}
 
@@ -63,16 +71,19 @@ public class CommonUtils {
 		StackTraceElement[] sta = Thread.currentThread().getStackTrace();
 		return String.format("%s : %s(%d)", sta[n].getFileName(), sta[n].getMethodName(), sta[n].getLineNumber());
 	}
-	
+
 	/**
 	 * Show a dialog containing the stack trace.
+	 * 
 	 * @param e
 	 */
 	public static void exception(Exception e) {
 		StringBuilder sb = new StringBuilder();
-		sb.append(String.format("Exception in thread \"%s\" %s: %s%n", Thread.currentThread().getName(), e.getClass().getName(), e.getMessage()));
+		sb.append(String.format("Exception in thread \"%s\" %s: %s%n", Thread.currentThread().getName(),
+				e.getClass().getName(), e.getMessage()));
 		for (StackTraceElement ste : e.getStackTrace()) {
-			sb.append(String.format("\t at %s.%s(%s:%d)%n", ste.getClassName(), ste.getMethodName(), ste.getFileName(), ste.getLineNumber()));
+			sb.append(String.format("\t at %s.%s(%s:%d)%n", ste.getClassName(), ste.getMethodName(), ste.getFileName(),
+					ste.getLineNumber()));
 		}
 		log(sb.toString());
 		JOptionPane.showMessageDialog(null, sb.toString(), e.getMessage(), JOptionPane.ERROR_MESSAGE);
