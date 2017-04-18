@@ -23,8 +23,6 @@ import org.apache.sanselan.common.IImageMetadata;
 import org.apache.sanselan.common.ImageMetadata.Item;
 import org.apache.sanselan.formats.jpeg.JpegImageMetadata;
 
-import fun.photoutil.main.CommonUtils;
-
 /**
  * A Utility container class that holds a BufferedImage. It delegates all the functions of the buffered Image and also
  * creates some of its own.
@@ -131,7 +129,6 @@ public class Photograph {
 			for (Object o : ((JpegImageMetadata) md).getItems()) {
 				Item item = (Item) o;
 				metadata.put(item.getKeyword(), item.getText());
-				CommonUtils.log(item.toString());
 			}
 		}
 	}

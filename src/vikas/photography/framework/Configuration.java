@@ -1,10 +1,12 @@
-package fun.photoutil.main;
+package vikas.photography.framework;
 
 import java.io.FileReader;
 import java.io.FileWriter;
 
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
+
+import fun.photoutil.main.CommonUtils;
 
 public class Configuration {
 	private static final JSONObject json = readConf();

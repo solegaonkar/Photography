@@ -31,7 +31,7 @@ public class ImageFile {
 	}
 
 	private static final Processor	scale		= new ScaleImage(Size.S01024);
-	private static final Processor	sign		= new SignImage("Vikas Solegaonkar");
+	private static final Processor	sign		= new SignImage("V i k a s   S o l e g a o n k a r");
 	private static final Processor	monochrome	= new Monochrome(new Color(255, 255, 255));
 	private static final Processor	enhance		= new EnhanceColor();
 
@@ -41,8 +41,8 @@ public class ImageFile {
 	 * @throws Exception
 	 */
 	public void process() throws Exception {
-		photograph.reset().apply(scale).apply(sign).apply(enhance).save(new File("enhance.jpg"), 1f);
-		photograph.reset().apply(scale).apply(sign).apply(monochrome).save(new File("monochrome.jpg"), 1f);
+		photograph.reset().apply(scale).apply(enhance).apply(sign).save(new File("enhance.jpg"), 1f);
+		photograph.reset().apply(scale).apply(monochrome).apply(sign).save(new File("monochrome.jpg"), 1f);
 	}
 
 	public static void main(String[] args) throws Exception {

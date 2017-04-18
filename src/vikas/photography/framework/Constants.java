@@ -1,4 +1,4 @@
-package fun.photoutil.main;
+package vikas.photography.framework;
 
 import java.io.File;
 

@@ -1,6 +1,7 @@
 package fun.photoutil.main;
 
 import fun.photoutil.ui.SplashScreen;
+import vikas.photography.framework.Constants;
 
 /**
  * The main entry point for the application. It triggers everything required for the application.
