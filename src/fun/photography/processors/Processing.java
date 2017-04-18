@@ -3,7 +3,7 @@
  */
 package fun.photography.processors;
 
-import vikas.photography.image.ImageFile;
+import vikas.photography.image.ImageProcessor;
 
 /**
  * @author vs0016025
@@ -11,7 +11,7 @@ import vikas.photography.image.ImageFile;
  */
 public abstract class Processing {
 	
-	public Processing(ImageFile file) {
+	public Processing(ImageProcessor file) {
 		
 	}
 	

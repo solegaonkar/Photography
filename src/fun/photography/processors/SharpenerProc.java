@@ -12,7 +12,7 @@ public class SharpenerProc {
 	public static void main(String[] args) {
 		BufferedImage img = null;
 		try {
-			img = ImageIO.read(new File("input1.jpg"));
+			img = ImageIO.read(new File("input.jpg"));
 		} catch (IOException e) {
 			System.out.println(e.toString());
 		}

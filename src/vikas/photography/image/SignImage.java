@@ -5,7 +5,6 @@ import java.awt.Font;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
-import vikas.photography.framework.CommonUtils;
 import vikas.photography.image.Photograph.Processor;
 
 public class SignImage implements Processor {
@@ -27,11 +26,10 @@ public class SignImage implements Processor {
 		iw = image.getWidth();
 
 		// Did not dig too much into this. But it works. Most probably the font size has a 1:2 relation with the pixels.
-		int fs = 2 * iw / ((signature.length() + 8));
+		int fs = 2 * iw / ((signature.length() + 8)) ;
 		BufferedImage signatureImage = new BufferedImage(iw / 1, fs * 2, BufferedImage.TYPE_INT_RGB);
 		sh = signatureImage.getHeight();
 		sw = signatureImage.getWidth();
-		CommonUtils.info("Signature Image Dimensions: " + sw + ":" + sh);
 
 		Graphics2D g2d = signatureImage.createGraphics();
 		g2d.setFont(new Font("Consolas", Font.ITALIC, fs));

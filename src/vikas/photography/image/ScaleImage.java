@@ -3,7 +3,6 @@ package vikas.photography.image;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 
-import fun.photoutil.main.CommonUtils;
 import vikas.photography.image.Photograph.Processor;
 
 /**
@@ -13,12 +12,7 @@ import vikas.photography.image.Photograph.Processor;
  *
  */
 public class ScaleImage implements Processor {
-	private float	scale	= 0f;
 	private Size	size	= null;
-
-	public ScaleImage(float scale) {
-		this.scale = scale;
-	}
 
 	public ScaleImage(Size size) {
 		this.size = size;
@@ -30,17 +24,14 @@ public class ScaleImage implements Processor {
 		float w = image.getWidth();
 		float h = image.getHeight();
 
-		if (scale == 0.0f) {
-			CommonUtils.log("Scaling to Size:" + size.value);
-			scale = (w > h) ? size.value / w : size.value / h;
-		}
-		CommonUtils.log("Scaling by: " + scale);
+		float scale = (w > h) ? size.value / w : size.value / h;
 
 		BufferedImage resizedImage = new BufferedImage((int) (image.getWidth() * scale),
 				(int) (image.getHeight() * scale), BufferedImage.TYPE_INT_RGB);
 		Graphics2D g = resizedImage.createGraphics();
 		g.drawImage(image, 0, 0, (int) (image.getWidth() * scale), (int) (image.getHeight() * scale), null);
 		g.dispose();
+
 		return resizedImage;
 	}
 

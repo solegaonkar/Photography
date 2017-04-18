@@ -7,8 +7,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
 
 import javax.imageio.IIOImage;
 import javax.imageio.ImageIO;
@@ -23,6 +25,8 @@ import org.apache.sanselan.common.IImageMetadata;
 import org.apache.sanselan.common.ImageMetadata.Item;
 import org.apache.sanselan.formats.jpeg.JpegImageMetadata;
 
+import vikas.photography.framework.CommonUtils;
+
 /**
  * A Utility container class that holds a BufferedImage. It delegates all the functions of the buffered Image and also
  * creates some of its own.
@@ -30,14 +34,16 @@ import org.apache.sanselan.formats.jpeg.JpegImageMetadata;
  * @author Vikas
  */
 public class Photograph {
-	private BufferedImage					wip;
+	private BufferedImage					wip						= null;
 	private final BufferedImage				img;
 	// Metadata in ImageIO format - easier to write back to the new file.
 	private final IIOMetadata				md;
 	// Metadata in Apache format - that is easier to read and deal with.
-	private final HashMap<String, String>	metadata			= new HashMap<String, String>();
+	private final HashMap<String, String>	metadata				= new HashMap<String, String>();
 
-	private static final String				FILE_TYPE_SUFFIX	= "jpg";
+	private static final String				FILE_TYPE_SUFFIX		= "jpg";
+	private static final SimpleDateFormat	metadataDateFormat		= new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
+	private static final SimpleDateFormat	outputFilePathFormat	= new SimpleDateFormat("yyyyMM/yyyyMMdd");
 
 	/**
 	 * Create an instance from the given source file.
@@ -49,34 +55,23 @@ public class Photograph {
 	public Photograph(File file) throws Exception {
 		ImageReader reader = ImageIO.getImageReadersBySuffix(FILE_TYPE_SUFFIX).next();
 		reader.setInput(ImageIO.createImageInputStream(new FileInputStream(file)));
-		// The index is meaningful in TIFF images that can have multiple pages.
 		md = reader.getImageMetadata(0);
 		img = reader.read(0);
-		wip = reader.read(0);
 
 		reader.dispose();
 		readMetadata(file);
-		save(new File("TestSave.jpg"), 1f);
 	}
 
-	public Photograph reset() {
-		 ColorModel cm = img.getColorModel();
-		 boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
-		 WritableRaster raster = img.copyData(null);
-		 wip = new BufferedImage(cm, raster, isAlphaPremultiplied, null);
-		 return this;
+	public Photograph start() {
+		ColorModel cm = img.getColorModel();
+		boolean isAlphaPremultiplied = cm.isAlphaPremultiplied();
+		WritableRaster raster = img.copyData(null);
+		wip = new BufferedImage(cm, raster, isAlphaPremultiplied, null);
+		return this;
 	}
+
 	/**
 	 * Save the image to the given file - in JPG format.
-	 * 
-	 * For some reason, the StackOverflow link
-	 * (http://stackoverflow.com/questions/8972357/manipulate-an-image-without-deleting-its-exif-data) ends this with
-	 * ImageIO.write(image, "jpg", ios);
-	 * 
-	 * Doubt if that is required - also the code seems to work pretty well without it. Check up if there is a problem
-	 * somewhere.
-	 * 
-	 * It cribbed for missing Huffman Tables.. Fixed by adding the setOptimizedHuffmanTable(true)
 	 * 
 	 * @param file
 	 * - the destination file
@@ -84,7 +79,11 @@ public class Photograph {
 	 * - compression quality 0 (worst) : 1 (best)
 	 * @throws IOException
 	 */
-	public final void save(File file, float quality) throws Exception {
+	public final void save(String parentFolder, Date date, float quality) throws Exception {
+		File file = new File(parentFolder, outputFilePathFormat.format(date));
+		file.getParentFile().mkdirs();
+		file = getTargetFile(file.getAbsolutePath(), 0);
+		
 		ImageWriter writer = ImageIO.getImageWritersByFormatName(FILE_TYPE_SUFFIX).next();
 		writer.setOutput(ImageIO.createImageOutputStream(new FileOutputStream(file)));
 		JPEGImageWriteParam iwParam = (JPEGImageWriteParam) writer.getDefaultWriteParam();
@@ -93,6 +92,11 @@ public class Photograph {
 		iwParam.setCompressionQuality(quality);
 		writer.write(null, new IIOImage(wip, null, md), iwParam);
 		writer.dispose();
+	}
+
+	private File getTargetFile(String base, int index) {
+		File file = new File(String.format("%s.%02d.jpg", base, index));
+		return file.exists() ? getTargetFile(base, index + 1) : file;
 	}
 
 	/**
@@ -133,13 +137,14 @@ public class Photograph {
 		}
 	}
 
-	/**
-	 * Get the metadata map
-	 * 
-	 * @return
-	 */
-	public final Map<String, String> getMetadata() {
-		return metadata;
+	public final Date getOriginalDateTime() {
+
+		try {
+			return metadataDateFormat.parse(metadata.get("Date Time Original").replaceAll("'", ""));
+		} catch (ParseException e) {
+			CommonUtils.exception(e);
+			return null;
+		}
 	}
 
 	public final Photograph apply(Processor processor) {
@@ -150,5 +155,4 @@ public class Photograph {
 	public static interface Processor {
 		BufferedImage process(BufferedImage image);
 	}
-
 }
