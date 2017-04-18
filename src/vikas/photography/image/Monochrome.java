@@ -1,25 +1,22 @@
-package fun.photography.processors;
+package vikas.photography.image;
 
 import java.awt.Color;
+import java.awt.image.BufferedImage;
 
-import fun.photography.framework.Photograph;
+import vikas.photography.image.Photograph.Processor;
 
-/**
- * 
- * @author vs0016025
- */
-public class MonochromeCreator  {
+public class Monochrome implements Processor {
 	private float[] hsbVals = new float[3];
 
 	/**
 	 * @param base
 	 */
-	public MonochromeCreator(Color base) {
-		super();
+	public Monochrome(Color base) {
 		Color.RGBtoHSB(base.getRed(), base.getGreen(), base.getBlue(), hsbVals);
 	}
 
-	public void process(Photograph image) {
+	@Override
+	public BufferedImage process(BufferedImage image) {
 		int[] rgb = new int[image.getWidth() * image.getHeight()];
 		image.getRGB(0, 0, image.getWidth(), image.getHeight(), rgb, 0, image.getWidth());
 
@@ -31,7 +28,7 @@ public class MonochromeCreator  {
 			rgb[i] = Color.HSBtoRGB(hsbVals[0], hsbVals[1], (r > g ? (r > b ? r : b) : (g > b ? g : b)) / 255);
 		}
 		image.setRGB(0, 0, image.getWidth(), image.getHeight(), rgb, 0, image.getWidth());
+		return image;
 	}
-
 
 }

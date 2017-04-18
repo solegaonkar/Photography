@@ -48,6 +48,9 @@ public class CommonUtils {
 			if (bw != null) {
 				bw.write(String.format("%s : %s : %s\n", CommonUtils.getTimeStamp(CommonUtils.TIME_FORMAT_3),
 						CommonUtils.getStackElementInfo(3), log));
+			} else {
+				System.out.println(String.format("%s : %s : %s\n", CommonUtils.getTimeStamp(CommonUtils.TIME_FORMAT_3),
+						CommonUtils.getStackElementInfo(3), log));
 			}
 		} catch (Exception e) {
 		}
