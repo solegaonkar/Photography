@@ -23,7 +23,7 @@ public class CommonUtils {
 
 	static {
 		try {
-			bw = new BufferedWriter(new FileWriter(PhotographyConstants.LOG_FILE));
+			bw = new BufferedWriter(new FileWriter(Constants.LOG_FILE));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

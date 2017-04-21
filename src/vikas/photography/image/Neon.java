@@ -5,7 +5,7 @@ import java.awt.image.BufferedImage;
 
 import vikas.photography.image.Photograph.Processor;
 
-public class Pencil implements Processor {
+public class Neon implements Processor {
 
 	@Override
 	public BufferedImage process(BufferedImage image) {
@@ -39,8 +39,7 @@ public class Pencil implements Processor {
 						+ Math.abs((nc[2].getBlue() + 2 * nc[5].getBlue() + nc[8].getBlue())
 								- (nc[0].getBlue() + 2 * nc[3].getBlue() + nc[6].getBlue()));
 
-				img.setRGB(x, y, new Color(255 - Math.min(255, (r + g + b) / 3), 255 - Math.min(255, (r + g + b) / 3),
-						255 - Math.min(255, (r + g + b) / 3)).getRGB());
+				img.setRGB(x, y, new Color(Math.min(255, r), Math.min(255, g), Math.min(255, b)).getRGB());
 			}
 		}
 

@@ -79,8 +79,8 @@ public class Photograph {
 	 * - compression quality 0 (worst) : 1 (best)
 	 * @throws IOException
 	 */
-	public final void save(String parentFolder, Date date, float quality) throws Exception {
-		File file = new File(parentFolder, outputFilePathFormat.format(date));
+	public final void save(String parentFolder, float quality) throws Exception {
+		File file = new File(parentFolder, outputFilePathFormat.format(getOriginalDateTime()));
 		file.getParentFile().mkdirs();
 		file = getTargetFile(file.getAbsolutePath(), 0);
 		
