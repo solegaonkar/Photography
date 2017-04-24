@@ -29,6 +29,7 @@ public class CommonUtils {
 		}
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			public void run() {
+				log("Shutting Down");
 				try {
 					if (bw != null) {
 						bw.flush();

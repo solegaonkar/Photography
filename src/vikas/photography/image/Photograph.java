@@ -1,5 +1,6 @@
 package vikas.photography.image;
 
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.awt.image.ColorModel;
 import java.awt.image.WritableRaster;
@@ -35,15 +36,17 @@ import vikas.photography.framework.CommonUtils;
  */
 public class Photograph {
 	private BufferedImage					wip						= null;
+
 	private final BufferedImage				img;
 	// Metadata in ImageIO format - easier to write back to the new file.
 	private final IIOMetadata				md;
 	// Metadata in Apache format - that is easier to read and deal with.
 	private final HashMap<String, String>	metadata				= new HashMap<String, String>();
+	private final File						sourceFile;
 
 	private static final String				FILE_TYPE_SUFFIX		= "jpg";
 	private static final SimpleDateFormat	metadataDateFormat		= new SimpleDateFormat("yyyy:MM:dd HH:mm:ss");
-	private static final SimpleDateFormat	outputFilePathFormat	= new SimpleDateFormat("yyyyMM/yyyyMMdd");
+	private static final SimpleDateFormat	outputFilePathFormat	= new SimpleDateFormat("yyyyMM/yyyyMMdd.HHmmss");
 
 	/**
 	 * Create an instance from the given source file.
@@ -53,12 +56,20 @@ public class Photograph {
 	 * @throws Exception
 	 */
 	public Photograph(File file) throws Exception {
+		sourceFile = file;
 		ImageReader reader = ImageIO.getImageReadersBySuffix(FILE_TYPE_SUFFIX).next();
-		reader.setInput(ImageIO.createImageInputStream(new FileInputStream(file)));
+		FileInputStream fis = new FileInputStream(file);
+		reader.setInput(ImageIO.createImageInputStream(fis));
 		md = reader.getImageMetadata(0);
-		img = reader.read(0);
-
+		BufferedImage bi = reader.read(0);
 		reader.dispose();
+		fis.close();
+		img = new BufferedImage(bi.getWidth(), bi.getHeight(), BufferedImage.TYPE_INT_RGB);
+
+		Graphics2D g = this.img.createGraphics();
+		g.drawImage(bi, 0, 0, null);
+		g.dispose();
+
 		readMetadata(file);
 	}
 
@@ -72,6 +83,7 @@ public class Photograph {
 
 	/**
 	 * Save the image to the given file - in JPG format.
+	 * @param image 
 	 * 
 	 * @param file
 	 * - the destination file
@@ -79,19 +91,24 @@ public class Photograph {
 	 * - compression quality 0 (worst) : 1 (best)
 	 * @throws IOException
 	 */
-	public final void save(String parentFolder, float quality) throws Exception {
-		File file = new File(parentFolder, outputFilePathFormat.format(getOriginalDateTime()));
-		file.getParentFile().mkdirs();
-		file = getTargetFile(file.getAbsolutePath(), 0);
-		
+	public final void save(BufferedImage image, String parentFolder, float quality) throws Exception {
+		File file = getTargetFile(parentFolder);
+
 		ImageWriter writer = ImageIO.getImageWritersByFormatName(FILE_TYPE_SUFFIX).next();
 		writer.setOutput(ImageIO.createImageOutputStream(new FileOutputStream(file)));
 		JPEGImageWriteParam iwParam = (JPEGImageWriteParam) writer.getDefaultWriteParam();
 		iwParam.setOptimizeHuffmanTables(true);
 		iwParam.setCompressionMode(ImageWriteParam.MODE_EXPLICIT);
 		iwParam.setCompressionQuality(quality);
-		writer.write(null, new IIOImage(wip, null, md), iwParam);
+		writer.write(null, new IIOImage(image, null, md), iwParam);
 		writer.dispose();
+	}
+
+	public File getTargetFile(String parentFolder) {
+		File file = new File(parentFolder, outputFilePathFormat.format(getOriginalDateTime()));
+		file.getParentFile().mkdirs();
+		file = getTargetFile(file.getAbsolutePath(), 0);
+		return file;
 	}
 
 	private File getTargetFile(String base, int index) {
@@ -127,10 +144,10 @@ public class Photograph {
 	 */
 	private final void readMetadata(final File file) throws Exception {
 		// get all metadata stored in EXIF format (ie. from JPEG or TIFF).
-		final IImageMetadata md = Sanselan.getMetadata(file);
+		final IImageMetadata imd = Sanselan.getMetadata(file);
 
-		if (md instanceof JpegImageMetadata) {
-			for (Object o : ((JpegImageMetadata) md).getItems()) {
+		if (imd instanceof JpegImageMetadata) {
+			for (Object o : ((JpegImageMetadata) imd).getItems()) {
 				Item item = (Item) o;
 				metadata.put(item.getKeyword(), item.getText());
 			}
@@ -152,7 +169,27 @@ public class Photograph {
 		return this;
 	}
 
+	/**
+	 * @return the sourceFile
+	 */
+	public File getSourceFile() {
+		return sourceFile;
+	}
+
+	/**
+	 * @return the wip
+	 */
+	public final BufferedImage getWip() {
+		return wip;
+	}
+
 	public static interface Processor {
 		BufferedImage process(BufferedImage image);
+	}
+
+	public String getInfo() {
+		StringBuilder sb = new StringBuilder();
+		sb.append("Add the image Metadata.");
+		return sb.toString();
 	}
 }
