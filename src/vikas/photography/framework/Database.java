@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Stream;
 
 /**
  * The utility class that stores all the data for this application. If required, this can be extended to connect to an
@@ -67,12 +66,9 @@ public class Database implements Serializable {
 		return db.allAlbums;
 	}
 
-	public static Stream<Record> getRecords(ImageType type, String album) {
+	public static AlbumRecords getRecords(ImageType type, String album) {
 		load();
-		if (album == null)
-			return db.images.get(type).stream();
-		else
-			return db.images.get(type).stream().filter(record -> record.albums.contains(album));
+		return new AlbumRecords(type, album);
 	}
 
 	public static void addRecord(ImageType type, Record record) {
@@ -97,6 +93,45 @@ public class Database implements Serializable {
 		}
 	}
 
+	public static class AlbumRecords {
+		private int			index	= -1;
+		private ImageType	type;
+		private String		album;
+
+		public AlbumRecords(ImageType type, String album) {
+			this.type = type;
+			this.album = album;
+		}
+		
+		public Record reset() {
+			index = -1;
+			return next();
+		}
+		
+		public Record next() {
+			for (int i = index+1 ; i<db.images.get(type).size(); i++) {
+				if (album == null || db.images.get(type).get(i).albums.contains(album)) {
+					index = i;
+					break;
+				}
+			}
+			if (index >= 0)
+				return db.images.get(type).get(index);
+			else 
+				return null;
+		}
+
+		public Record prev() {
+			for (int i = index-1 ; i>=0; i--) {
+				if (album == null || db.images.get(type).get(i).albums.contains(album)) {
+					index = i;
+					break;
+				}
+			}
+			return db.images.get(type).get(index);
+		}
+	}
+
 	/**
 	 * A DB record for a photograph. This contains references to the various albums that hold the
 	 * 
@@ -106,7 +141,7 @@ public class Database implements Serializable {
 	public static class Record implements Serializable {
 		private static final long	serialVersionUID	= 3728161113619888877L;
 
-		private Set<String>			albums = new HashSet<String>();
+		private Set<String>			albums				= new HashSet<String>();
 		private String				relativeFilePath;
 		private String				title;
 		private String				info;
@@ -177,6 +212,12 @@ public class Database implements Serializable {
 		 */
 		public void setFlickrUrl(String flickrUrl) {
 			this.flickrUrl = flickrUrl;
+		}
+
+		public String getAlbumString() {
+			StringBuilder sb = new StringBuilder();
+			albums.forEach(s -> sb.append(s + ":"));
+			return sb.toString();
 		}
 
 	}

@@ -2,8 +2,10 @@ package vikas.photography.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Cursor;
 import java.awt.EventQueue;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
@@ -12,7 +14,7 @@ import java.nio.file.Paths;
 import java.util.concurrent.SynchronousQueue;
 
 import javax.swing.JButton;
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingWorker;
@@ -33,7 +35,7 @@ import vikas.photography.image.ScaleImage;
 import vikas.photography.image.ScaleImage.Size;
 import vikas.photography.image.SignImage;
 
-public class ApplicationFrame extends JFrame {
+public class AddNewImages extends JDialog {
 	private static final long					serialVersionUID	= -7859144435285217145L;
 	private static final SynchronousQueue<File>	jpgFiles			= new SynchronousQueue<File>();
 
@@ -44,15 +46,12 @@ public class ApplicationFrame extends JFrame {
 	private static final Processor				pencil				= new Pencil();
 	private static final Processor				neon				= new Neon();
 
-	private static JTabbedPane					tabbedPane			= new JTabbedPane(JTabbedPane.TOP);
-	private static boolean						complete			= false;
-	private static JPanel						contentPane;
-	private static JPanel						panelButtons		= new JPanel();
-	private static JButton						btnNext				= new JButton("Next");
-	private static JButton						btnFlickr			= new JButton("Flickr");
-	private static JButton						btnDetails			= new JButton("Details");
+	private static final JTabbedPane			tabbedPane			= new JTabbedPane(JTabbedPane.TOP);
+	private static final JPanel					contentPane			= new JPanel();
+	private static final JButton				btnNext				= new JButton("Process the Next Photograph");
 
 	private static Record						record				= null;
+	private static volatile boolean				complete			= false;
 
 	/**
 	 * Launch the application.
@@ -64,7 +63,7 @@ public class ApplicationFrame extends JFrame {
 			public void run() {
 				try {
 					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-					ApplicationFrame frame = new ApplicationFrame();
+					AddNewImages frame = new AddNewImages();
 					frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -80,86 +79,76 @@ public class ApplicationFrame extends JFrame {
 	/**
 	 * Create the frame.
 	 */
-	public ApplicationFrame() {
+	public AddNewImages() {
 		setTitle("Photo Album");
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		// setExtendedState(JFrame.MAXIMIZED_BOTH);
-		setBounds(100, 100, 665, 437);
+		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+		setBounds(100, 100, Toolkit.getDefaultToolkit().getScreenSize().width - 100,
+				Toolkit.getDefaultToolkit().getScreenSize().height - 100);
 
-		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));
 		setContentPane(contentPane);
-
-		btnNext.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				processNext();
-			}
-		});
-
-		btnDetails.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				DetailsDialog dd = new DetailsDialog(record);
-				dd.setVisible(true);
-			}
-		});
-
-		btnFlickr.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-			}
-		});
-		panelButtons.add(btnDetails);
-		panelButtons.add(btnNext);
-		panelButtons.add(btnFlickr);
-		contentPane.add(panelButtons, BorderLayout.NORTH);
 		contentPane.add(tabbedPane, BorderLayout.CENTER);
-
-		// processNext();
-	}
-
-	/**
-	 * Invoke the set of processors one after other and save the photograph at appropriate points.
-	 * 
-	 * @throws Exception
-	 */
-	private void processNext() {
-		try {
-			if (!complete)
-				new PhotographLoader(jpgFiles.take(), this).execute();
-		} catch (Exception e) {
-			CommonUtils.exception(e);
-		}
-		System.gc();
+		contentPane.add(btnNext, BorderLayout.SOUTH);
+		btnNext.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent ae) {
+				try {
+					btnNext.setEnabled(false);
+					if (!complete) {
+						PhotographLoader pl = new PhotographLoader(jpgFiles.take(), contentPane);
+						pl.execute();
+					}
+				} catch (InterruptedException e) {
+					CommonUtils.exception(e);
+				}
+			}
+		});
 	}
 
 	public static class PhotographLoader extends SwingWorker<String, Void> {
-		private JFrame	frame;
-		private File	jpg;
+		private Component	parent;
+		private File		jpg;
 
-		public PhotographLoader(File jpg, JFrame frame) {
+		public PhotographLoader(File jpg, Component parent) {
 			this.jpg = jpg;
-			this.frame = frame;
+			this.parent = parent;
 		}
 
 		@Override
 		protected String doInBackground() {
 			try {
 				CommonUtils.log("Starting PhotoLoader Background Thread");
-				frame.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+				parent.setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 				record = new Record();
 				tabbedPane.removeAll();
 				Photograph photograph = new Photograph(jpg);
-				tabbedPane.addTab("Plain", new ImagePanel(photograph.start().apply(scale).apply(sign),
-						Constants.PlainPath, ImageType.Color, record));
-				tabbedPane.addTab("Enhanced", new ImagePanel(photograph.start().apply(scale).apply(sign).apply(enhance),
-						Constants.EnhancedPath, ImageType.Color, record));
-				tabbedPane.addTab("Monochrome",
-						new ImagePanel(photograph.start().apply(scale).apply(sign).apply(monochrome),
-								Constants.MonochromePath, ImageType.Monochrome, record));
-				tabbedPane.addTab("Neon", new ImagePanel(photograph.start().apply(scale).apply(sign).apply(neon),
-						Constants.NeonPath, ImageType.Neon, record));
-				tabbedPane.addTab("Pencil", new ImagePanel(photograph.start().apply(scale).apply(sign).apply(pencil),
-						Constants.PencilPath, ImageType.Pencil, record));
+				{
+					ImagePanel ip = new ImagePanel(photograph.start().apply(scale).apply(sign).getWip());
+					ip.createMouseListener(photograph, Constants.PlainPath, ImageType.Color, record);
+					tabbedPane.addTab("Plain", ip);
+				}
+				{
+					ImagePanel ip = new ImagePanel(photograph.start().apply(scale).apply(sign).apply(enhance).getWip());
+					ip.createMouseListener(photograph, Constants.EnhancedPath, ImageType.Color, record);
+					tabbedPane.addTab("Enhanced", ip);
+				}
+				{
+					ImagePanel ip =
+							new ImagePanel(photograph.start().apply(scale).apply(sign).apply(monochrome).getWip());
+					ip.createMouseListener(photograph, Constants.MonochromePath, ImageType.Monochrome, record);
+					tabbedPane.addTab("Monochrome", ip);
+				}
+				{
+					ImagePanel ip = new ImagePanel(photograph.start().apply(scale).apply(sign).apply(neon).getWip());
+					ip.createMouseListener(photograph, Constants.NeonPath, ImageType.Neon, record);
+					tabbedPane.addTab("Neon", ip);
+				}
+				{
+					ImagePanel ip = new ImagePanel(photograph.start().apply(scale).apply(sign).apply(pencil).getWip());
+					ip.createMouseListener(photograph, Constants.PencilPath, ImageType.Pencil, record);
+					tabbedPane.addTab("Pencil", ip);
+				}
 				Files.move(Paths.get(photograph.getSourceFile().getAbsolutePath()),
 						Paths.get(photograph.getTargetFile(Constants.OriginalsPath).getAbsolutePath()));
 				CommonUtils.log("End of PhotoLoader Background Thread");
@@ -171,9 +160,9 @@ public class ApplicationFrame extends JFrame {
 
 		@Override
 		protected void done() {
-			if (complete)
-				btnNext.setEnabled(false);
-			frame.setCursor(Cursor.getDefaultCursor());
+			if (!complete)
+				btnNext.setEnabled(true);
+			parent.setCursor(Cursor.getDefaultCursor());
 		}
 	}
 }

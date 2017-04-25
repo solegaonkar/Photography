@@ -11,6 +11,7 @@ import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
+import javax.imageio.ImageIO;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
@@ -29,9 +30,28 @@ public class ImagePanel extends JPanel {
 	private static final long	serialVersionUID	= -3230373971732277427L;
 	private BufferedImage		image				= null;
 
-	public ImagePanel(Photograph photograph, String parentFolder, ImageType type, Record record) {
+	public ImagePanel(BufferedImage image) {
 		super();
-		this.image = photograph.getWip();
+		this.image = image;
+	}
+
+	public ImagePanel(Record record) throws Exception {
+		super();
+		if (record != null) {
+			CommonUtils.log(Constants.BASE_DIRECTORY + File.separator + record.getRelativeFilePath());
+			this.image =
+					ImageIO.read(new File(Constants.BASE_DIRECTORY + File.separator + record.getRelativeFilePath()));
+		} else {
+			image = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
+		}
+	}
+
+	public void update(Record record) throws Exception {
+		this.image = ImageIO.read(new File(Constants.BASE_DIRECTORY + File.separator + record.getRelativeFilePath()));
+		repaint();
+	}
+
+	public void createMouseListener(Photograph photograph, String parentFolder, ImageType type, Record record) {
 		addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent me) {
@@ -41,17 +61,15 @@ public class ImagePanel extends JPanel {
 				}
 				if (!record.getAlbums().isEmpty() && record.getInfo() != null && record.getInfo().length() != 0
 						&& record.getTitle() != null && record.getTitle().length() != 0) {
-					if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(null,
-							"If you like this image, I will save it in the appropriate folder...", "Save?",
-							JOptionPane.OK_CANCEL_OPTION)) {
-						try {
-							File f = photograph.save(image, parentFolder, Constants.SaveQuality);
-							record.setRelativePath(
-									f.getAbsolutePath().substring(Constants.BASE_DIRECTORY.length() + 1));
-							Database.addRecord(type, record);
-						} catch (Exception e) {
-							CommonUtils.exception(e);
-						}
+					try {
+						File f = photograph.save(image, parentFolder, Constants.SaveQuality);
+						record.setRelativePath(f.getAbsolutePath().substring(Constants.BASE_DIRECTORY.length() + 1));
+						Database.addRecord(type, record);
+						JOptionPane.showMessageDialog(null, String.format("Saved to path: %s%n Albums: %s",
+								f.getAbsolutePath(), record.getAlbumString()), "Saved",
+								JOptionPane.INFORMATION_MESSAGE);
+					} catch (Exception e) {
+						CommonUtils.exception(e);
 					}
 				}
 			}
