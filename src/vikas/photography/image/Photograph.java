@@ -91,7 +91,7 @@ public class Photograph {
 	 * - compression quality 0 (worst) : 1 (best)
 	 * @throws IOException
 	 */
-	public final void save(BufferedImage image, String parentFolder, float quality) throws Exception {
+	public final File save(BufferedImage image, String parentFolder, float quality) throws Exception {
 		File file = getTargetFile(parentFolder);
 
 		ImageWriter writer = ImageIO.getImageWritersByFormatName(FILE_TYPE_SUFFIX).next();
@@ -102,6 +102,7 @@ public class Photograph {
 		iwParam.setCompressionQuality(quality);
 		writer.write(null, new IIOImage(image, null, md), iwParam);
 		writer.dispose();
+		return file;
 	}
 
 	public File getTargetFile(String parentFolder) {

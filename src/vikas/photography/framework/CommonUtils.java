@@ -2,7 +2,6 @@ package vikas.photography.framework;
 
 import java.io.BufferedWriter;
 import java.io.File;
-import java.io.FileWriter;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,29 +14,14 @@ import java.util.Calendar;
 import javax.swing.JOptionPane;
 
 public class CommonUtils {
-	public static final String		TIME_FORMAT_1	= "%04d%02d%02d%02d%02d%02d";
-	public static final String		TIME_FORMAT_2	= "%04d%02d%02d %02d%02d%02d";
-	public static final String		TIME_FORMAT_3	= "%04d/%02d/%02d %02d:%02d:%02d";
-
-	public static BufferedWriter	bw				= null;
+	public static final String	TIME_FORMAT_1	= "%04d%02d%02d%02d%02d%02d";
+	public static final String	TIME_FORMAT_2	= "%04d%02d%02d %02d%02d%02d";
+	public static final String	TIME_FORMAT_3	= "%04d/%02d/%02d %02d:%02d:%02d";
 
 	static {
-		try {
-			bw = new BufferedWriter(new FileWriter(Constants.LOG_FILE));
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			public void run() {
 				log("Shutting Down");
-				try {
-					if (bw != null) {
-						bw.flush();
-						bw.close();
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
 			}
 		}));
 	}
@@ -48,16 +32,6 @@ public class CommonUtils {
 	 * @param log
 	 */
 	public static void log(String log) {
-		try {
-			if (bw != null) {
-				bw.write(String.format("%s : %s : %s\n", CommonUtils.getTimeStamp(CommonUtils.TIME_FORMAT_3),
-						CommonUtils.getStackElementInfo(3), log));
-			} else {
-				System.out.println(String.format("%s : %s : %s\n", CommonUtils.getTimeStamp(CommonUtils.TIME_FORMAT_3),
-						CommonUtils.getStackElementInfo(3), log));
-			}
-		} catch (Exception e) {
-		}
 		System.out.printf("%s : %s : %s\n", CommonUtils.getTimeStamp(CommonUtils.TIME_FORMAT_3),
 				CommonUtils.getStackElementInfo(3), log);
 	}

@@ -9,11 +9,16 @@ import java.awt.Image;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.awt.image.BufferedImage;
+import java.io.File;
 
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 
 import vikas.photography.framework.CommonUtils;
+import vikas.photography.framework.Constants;
+import vikas.photography.framework.Database;
+import vikas.photography.framework.Database.ImageType;
+import vikas.photography.framework.Database.Record;
 import vikas.photography.image.Photograph;
 
 /**
@@ -24,19 +29,29 @@ public class ImagePanel extends JPanel {
 	private static final long	serialVersionUID	= -3230373971732277427L;
 	private BufferedImage		image				= null;
 
-	public ImagePanel(Photograph photograph, String parentFolder) {
+	public ImagePanel(Photograph photograph, String parentFolder, ImageType type, Record record) {
 		super();
 		this.image = photograph.getWip();
 		addMouseListener(new MouseAdapter() {
 			@Override
 			public void mouseClicked(MouseEvent me) {
-				if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(null,
-						"If you like this image, I will save it in the appropriate folder...", "Save?",
-						JOptionPane.OK_CANCEL_OPTION)) {
-					try {
-						photograph.save(image, parentFolder, 1f);
-					} catch (Exception e) {
-						CommonUtils.exception(e);
+				if (record.getAlbums().isEmpty() || record.getInfo() == null || record.getInfo().length() == 0
+						|| record.getTitle() == null || record.getTitle().length() == 0) {
+					new DetailsDialog(record).setVisible(true);
+				}
+				if (!record.getAlbums().isEmpty() && record.getInfo() != null && record.getInfo().length() != 0
+						&& record.getTitle() != null && record.getTitle().length() != 0) {
+					if (JOptionPane.OK_OPTION == JOptionPane.showConfirmDialog(null,
+							"If you like this image, I will save it in the appropriate folder...", "Save?",
+							JOptionPane.OK_CANCEL_OPTION)) {
+						try {
+							File f = photograph.save(image, parentFolder, Constants.SaveQuality);
+							record.setRelativePath(
+									f.getAbsolutePath().substring(Constants.BASE_DIRECTORY.length() + 1));
+							Database.addRecord(type, record);
+						} catch (Exception e) {
+							CommonUtils.exception(e);
+						}
 					}
 				}
 			}
