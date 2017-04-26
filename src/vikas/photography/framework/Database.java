@@ -22,9 +22,11 @@ public class Database implements Serializable {
 	private static final long						serialVersionUID	= -8811747209971653973L;
 	private static Database							db					= null;
 	private static File								dbFile				= new File(Constants.DataFile);
+	private static Set<String>						allAlbums			= null;
+	private static String							album				= null;
+	private static ImageType						type				= null;
 
 	private HashMap<ImageType, ArrayList<Record>>	images				= null;
-	private transient Set<String>					allAlbums			= null;
 
 	/**
 	 * Private constructor to help singleton.
@@ -49,10 +51,10 @@ public class Database implements Serializable {
 					save();
 				}
 
-				db.allAlbums = new HashSet<String>();
+				allAlbums = new HashSet<String>();
 				for (ArrayList<Record> al : db.images.values()) {
 					for (Record rec : al) {
-						db.allAlbums.addAll(rec.albums);
+						allAlbums.addAll(rec.albums);
 					}
 				}
 			}
@@ -63,10 +65,18 @@ public class Database implements Serializable {
 
 	public static Set<String> getAllAlbums() {
 		load();
-		return db.allAlbums;
+		return allAlbums;
 	}
 
-	public static AlbumRecords getRecords(ImageType type, String album) {
+	public static void setAlbum(String album) {
+		Database.album = album;
+	}
+
+	public static void setType(ImageType type) {
+		Database.type = type;
+	}
+
+	public static AlbumRecords getRecords() {
 		load();
 		return new AlbumRecords(type, album);
 	}
@@ -75,7 +85,7 @@ public class Database implements Serializable {
 		load();
 		if (!db.images.containsKey(type))
 			db.images.put(type, new ArrayList<Record>());
-		db.images.get(type).add(record);
+		db.images.get(type).add(record.getCopy());
 		save();
 	}
 
@@ -94,41 +104,50 @@ public class Database implements Serializable {
 	}
 
 	public static class AlbumRecords {
-		private int			index	= -1;
-		private ImageType	type;
-		private String		album;
+		private int					index	= -1;
+		private String				album;
+		private ArrayList<Record>	list	= null;
 
 		public AlbumRecords(ImageType type, String album) {
-			this.type = type;
 			this.album = album;
+			if (type == null) {
+				list = new ArrayList<Record>();
+				db.images.keySet().forEach(k -> list.addAll(db.images.get(k)));
+			} else if (db.images.get(type) != null) {
+				list = db.images.get(type);
+			}
 		}
-		
+
 		public Record reset() {
 			index = -1;
 			return next();
 		}
-		
+
 		public Record next() {
-			for (int i = index+1 ; i<db.images.get(type).size(); i++) {
-				if (album == null || db.images.get(type).get(i).albums.contains(album)) {
-					index = i;
-					break;
+			if (list != null) {
+				for (int i = index + 1; i < list.size(); i++) {
+					if (album == null || list.get(i).albums.contains(album)) {
+						index = i;
+						break;
+					}
 				}
+				if (index >= 0)
+					return list.get(index);
 			}
-			if (index >= 0)
-				return db.images.get(type).get(index);
-			else 
-				return null;
+			return null;
 		}
 
 		public Record prev() {
-			for (int i = index-1 ; i>=0; i--) {
-				if (album == null || db.images.get(type).get(i).albums.contains(album)) {
-					index = i;
-					break;
+			if (list != null) {
+				for (int i = index - 1; i >= 0; i--) {
+					if (album == null || list.get(i).albums.contains(album)) {
+						index = i;
+						break;
+					}
 				}
+				return list.get(index);
 			}
-			return db.images.get(type).get(index);
+			return null;
 		}
 	}
 
@@ -142,10 +161,33 @@ public class Database implements Serializable {
 		private static final long	serialVersionUID	= 3728161113619888877L;
 
 		private Set<String>			albums				= new HashSet<String>();
-		private String				relativeFilePath;
-		private String				title;
-		private String				info;
-		private String				flickrUrl;
+		private String				relativeFilePath	= null;
+		private String				title				= null;
+		private String				info				= null;
+		private String				flickrUrl			= null;
+
+		/**
+		 * 
+		 */
+		public Record() {
+			super();
+		}
+
+		/**
+		 * @param albums
+		 * @param relativeFilePath
+		 * @param title
+		 * @param info
+		 * @param flickrUrl
+		 */
+		public Record(Set<String> albums, String relativeFilePath, String title, String info, String flickrUrl) {
+			this();
+			this.albums = albums;
+			this.relativeFilePath = relativeFilePath;
+			this.title = title;
+			this.info = info;
+			this.flickrUrl = flickrUrl;
+		}
 
 		/**
 		 * @return the albums
@@ -220,6 +262,9 @@ public class Database implements Serializable {
 			return sb.toString();
 		}
 
+		public Record getCopy() {
+			return new Record(albums, relativeFilePath, title, info, flickrUrl);
+		}
 	}
 
 	public static enum ImageType {

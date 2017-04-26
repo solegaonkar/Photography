@@ -18,7 +18,6 @@ import javax.swing.JDialog;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.SwingWorker;
-import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
 import vikas.photography.framework.CommonUtils;
@@ -58,22 +57,20 @@ public class AddNewImages extends JDialog {
 	 * 
 	 * @throws Exception
 	 */
-	public static void main(String[] args) throws Exception {
-		EventQueue.invokeLater(new Runnable() {
+	public static void start() {
+		new Thread(new Runnable() {
 			public void run() {
-				try {
-					UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-					AddNewImages frame = new AddNewImages();
-					frame.setVisible(true);
-				} catch (Exception e) {
-					e.printStackTrace();
+				for (File file : new File(Constants.InputPath).listFiles()) {
+					try {
+						jpgFiles.put(file);
+					} catch (Exception e) {
+					}
 				}
+				complete = true;
 			}
-		});
-		for (File file : new File(Constants.InputPath).listFiles()) {
-			jpgFiles.put(file);
-		}
-		complete = true;
+		}).start();;
+		AddNewImages ani = new AddNewImages();
+		ani.setVisible(true);
 	}
 
 	/**
@@ -84,6 +81,7 @@ public class AddNewImages extends JDialog {
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
 		setBounds(100, 100, Toolkit.getDefaultToolkit().getScreenSize().width - 100,
 				Toolkit.getDefaultToolkit().getScreenSize().height - 100);
+		setModalityType(ModalityType.APPLICATION_MODAL);
 
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
 		contentPane.setLayout(new BorderLayout(0, 0));

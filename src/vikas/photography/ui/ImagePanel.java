@@ -47,7 +47,9 @@ public class ImagePanel extends JPanel {
 	}
 
 	public void update(Record record) throws Exception {
-		this.image = ImageIO.read(new File(Constants.BASE_DIRECTORY + File.separator + record.getRelativeFilePath()));
+		if (record != null)
+			this.image =
+					ImageIO.read(new File(Constants.BASE_DIRECTORY + File.separator + record.getRelativeFilePath()));
 		repaint();
 	}
 
@@ -97,13 +99,5 @@ public class ImagePanel extends JPanel {
 			g.fillRect(x - 10, y - 10, w + 20, h + 20);
 			g.drawImage(image.getScaledInstance(w, h, Image.SCALE_SMOOTH), x, y, null);
 		}
-	}
-
-	/**
-	 * @param image
-	 * the image to set
-	 */
-	public final void setImageInfo(Photograph photograph, String parentFolder) {
-		CommonUtils.log("Create Image Panel Tab: " + photograph.getSourceFile());
 	}
 }
