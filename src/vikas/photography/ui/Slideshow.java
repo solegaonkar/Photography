@@ -2,6 +2,7 @@ package vikas.photography.ui;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.InputEvent;
@@ -58,8 +59,10 @@ public class Slideshow extends JFrame {
 	public Slideshow() throws Exception {
 		setTitle("Album");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		setBounds(100, 100, 665, 437);
-		// setExtendedState(JFrame.MAXIMIZED_BOTH);
+		int w = Toolkit.getDefaultToolkit().getScreenSize().width;
+		int h = Toolkit.getDefaultToolkit().getScreenSize().height;
+		setBounds(w / 4, h / 4, w / 2, h / 2);
+
 		JPanel contentPane;
 		createMenuBar();
 		contentPane = new JPanel();
@@ -113,6 +116,7 @@ public class Slideshow extends JFrame {
 			public void actionPerformed(ActionEvent e) {
 				setVisible(false);
 				AddNewImages.start();
+				createMenuBar();
 				setVisible(true);
 			}
 		});

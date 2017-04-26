@@ -2,6 +2,7 @@ package vikas.photography.ui;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
+import java.awt.Toolkit;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
@@ -46,6 +47,10 @@ public class DetailsDialog extends JDialog {
 
 		setModalityType(ModalityType.APPLICATION_MODAL);
 		pack();
+
+		int w = Toolkit.getDefaultToolkit().getScreenSize().width;
+		int h = Toolkit.getDefaultToolkit().getScreenSize().height;
+		setLocation((w - getSize().width) / 2, (h - getSize().height) / 2);
 	}
 
 	private void createAlbumPanel(Record record) {

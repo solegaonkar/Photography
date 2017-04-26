@@ -79,8 +79,10 @@ public class AddNewImages extends JDialog {
 	public AddNewImages() {
 		setTitle("Photo Album");
 		setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-		setBounds(100, 100, Toolkit.getDefaultToolkit().getScreenSize().width - 100,
-				Toolkit.getDefaultToolkit().getScreenSize().height - 100);
+		int w = Toolkit.getDefaultToolkit().getScreenSize().width;
+		int h = Toolkit.getDefaultToolkit().getScreenSize().height;
+		setBounds(w / 4, h / 4, w / 2, h / 2);
+
 		setModalityType(ModalityType.APPLICATION_MODAL);
 
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));

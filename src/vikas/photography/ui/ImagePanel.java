@@ -37,20 +37,25 @@ public class ImagePanel extends JPanel {
 
 	public ImagePanel(Record record) throws Exception {
 		super();
-		if (record != null) {
-			CommonUtils.log(Constants.BASE_DIRECTORY + File.separator + record.getRelativeFilePath());
-			this.image =
-					ImageIO.read(new File(Constants.BASE_DIRECTORY + File.separator + record.getRelativeFilePath()));
-		} else {
-			image = new BufferedImage(10, 10, BufferedImage.TYPE_INT_RGB);
-		}
+		update(record);
 	}
 
 	public void update(Record record) throws Exception {
-		if (record != null)
+		if (record != null) {
 			this.image =
 					ImageIO.read(new File(Constants.BASE_DIRECTORY + File.separator + record.getRelativeFilePath()));
-		repaint();
+			repaint();
+			createMouseListener(record);
+		}
+	}
+
+	public void createMouseListener(Record record) {
+		addMouseListener(new MouseAdapter() {
+			@Override
+			public void mouseClicked(MouseEvent me) {
+				new DetailsDialog(record).setVisible(true);
+			}
+		});
 	}
 
 	public void createMouseListener(Photograph photograph, String parentFolder, ImageType type, Record record) {
@@ -81,9 +86,9 @@ public class ImagePanel extends JPanel {
 	@Override
 	protected void paintComponent(Graphics g) {
 		super.paintComponent(g);
-		int h = 0, w = 0, x = 0, y = 0;
 
 		if (image != null) {
+			int h = 0, w = 0, x = 0, y = 0;
 			if ((image.getHeight() * this.getWidth()) > (this.getHeight() * image.getWidth())) {
 				h = this.getHeight() - 20;
 				w = h * image.getWidth() / image.getHeight();
