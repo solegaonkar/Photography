@@ -57,7 +57,7 @@ public class Slideshow extends JFrame {
 	 * @throws Exception
 	 */
 	public Slideshow() throws Exception {
-		setTitle("Album");
+		setTitle("Photo Album");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		int w = Toolkit.getDefaultToolkit().getScreenSize().width;
 		int h = Toolkit.getDefaultToolkit().getScreenSize().height;

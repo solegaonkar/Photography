@@ -43,7 +43,7 @@ public class ImagePanel extends JPanel {
 	public void update(Record record) throws Exception {
 		if (record != null) {
 			this.image =
-					ImageIO.read(new File(Constants.BASE_DIRECTORY + File.separator + record.getRelativeFilePath()));
+					ImageIO.read(new File(record.getAbsolutePath()));
 			repaint();
 			createMouseListener(record);
 		}

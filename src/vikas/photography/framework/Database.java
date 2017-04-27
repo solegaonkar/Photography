@@ -164,7 +164,7 @@ public class Database implements Serializable {
 		private String				relativeFilePath	= null;
 		private String				title				= null;
 		private String				info				= null;
-		private String				flickrUrl			= null;
+		private String				flickrPhotoId		= null;
 
 		/**
 		 * 
@@ -180,13 +180,13 @@ public class Database implements Serializable {
 		 * @param info
 		 * @param flickrUrl
 		 */
-		public Record(Set<String> albums, String relativeFilePath, String title, String info, String flickrUrl) {
+		public Record(Set<String> albums, String relativeFilePath, String title, String info, String flickrPhotoId) {
 			this();
 			this.albums = albums;
 			this.relativeFilePath = relativeFilePath;
 			this.title = title;
 			this.info = info;
-			this.flickrUrl = flickrUrl;
+			this.flickrPhotoId = flickrPhotoId;
 		}
 
 		/**
@@ -242,18 +242,18 @@ public class Database implements Serializable {
 		}
 
 		/**
-		 * @return the flickrUrl
+		 * @return the flickrPhotoId
 		 */
-		public String getFlickrUrl() {
-			return flickrUrl;
+		public String getFlickrPhotoId() {
+			return flickrPhotoId;
 		}
 
 		/**
-		 * @param flickrUrl
-		 * the flickrUrl to set
+		 * @param flickrPhotoId
+		 * the flickrPhotoId to set
 		 */
-		public void setFlickrUrl(String flickrUrl) {
-			this.flickrUrl = flickrUrl;
+		public void setFlickrPhotoId(String flickrPhotoId) {
+			this.flickrPhotoId = flickrPhotoId;
 		}
 
 		public String getAlbumString() {
@@ -263,7 +263,11 @@ public class Database implements Serializable {
 		}
 
 		public Record getCopy() {
-			return new Record(albums, relativeFilePath, title, info, flickrUrl);
+			return new Record(albums, relativeFilePath, title, info, flickrPhotoId);
+		}
+
+		public String getAbsolutePath() {
+			return Constants.BASE_DIRECTORY + File.separator + getRelativeFilePath();
 		}
 	}
 
