@@ -10,6 +10,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -158,7 +159,10 @@ public class Photograph {
 	public final Date getOriginalDateTime() {
 
 		try {
-			return metadataDateFormat.parse(metadata.get("Date Time Original").replaceAll("'", ""));
+			if (metadata.get("Date Time Original") != null)
+				return metadataDateFormat.parse(metadata.get("Date Time Original").replaceAll("'", ""));
+			else 
+				return Calendar.getInstance().getTime();
 		} catch (ParseException e) {
 			CommonUtils.exception(e);
 			return null;

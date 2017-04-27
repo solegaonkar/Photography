@@ -10,6 +10,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.List;
 import java.util.concurrent.SynchronousQueue;
 
 import javax.swing.JButton;
@@ -52,18 +53,32 @@ public class AddNewImages extends JDialog {
 	private static volatile boolean				complete			= false;
 
 	/**
+	 * Recursively read files in all directories to pick and process only jpg files.
+	 * 
+	 * @param file
+	 */
+	private static void addFile(File file) {
+		if (file.isDirectory()) {
+			for (File f : file.listFiles())
+				addFile(f);
+		} else if (file.getName().substring(file.getName().length() - 4).equalsIgnoreCase(".jpg")) {
+			try {
+				jpgFiles.put(file);
+			} catch (Exception e) {
+			}
+		}
+	}
+
+	/**
 	 * Launch the application.
 	 * 
 	 * @throws Exception
 	 */
-	public static void start() {
+	public static void start(List<File> files) {
 		new Thread(new Runnable() {
 			public void run() {
-				for (File file : new File(Constants.InputPath).listFiles()) {
-					try {
-						jpgFiles.put(file);
-					} catch (Exception e) {
-					}
+				for (File file : files) {
+					addFile(file);
 				}
 				complete = true;
 			}

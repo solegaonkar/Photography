@@ -34,7 +34,7 @@ import vikas.photography.framework.Database.Record;
  *
  */
 public class FlickrUtil {
-	static final String						nsid				= "";
+	static final String						nsid				= "20952560@N06";
 	static final String						userName			= "Vikas Solegaonkar";
 	static final Flickr						flickr				= connect();
 	static final ActivityInterface			activityInterface	= flickr.getActivityInterface();
@@ -109,8 +109,8 @@ public class FlickrUtil {
 	}
 
 	private static Flickr connect() {
-		String apikey = "";
-		String secret = "";
+		String apikey = "7bd31a0709dd56f4e188aa72c290e5e6";
+		String secret = "8d4ffb3ed2390abc";
 
 		Flickr.debugRequest = false;
 		Flickr.debugStream = false;
@@ -119,8 +119,8 @@ public class FlickrUtil {
 		RequestContext requestContext = RequestContext.getRequestContext();
 		Auth auth = new Auth();
 		auth.setPermission(Permission.DELETE);
-		auth.setToken("");
-		auth.setTokenSecret("");
+		auth.setToken("72157680421952292-3a50f8a04719106c");
+		auth.setTokenSecret("7df9bf8e408d55c9");
 		requestContext.setAuth(auth);
 
 		return flickr;
