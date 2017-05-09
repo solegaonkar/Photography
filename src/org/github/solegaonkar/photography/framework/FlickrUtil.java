@@ -1,4 +1,4 @@
-package vikas.photography.flickr;
+package org.github.solegaonkar.photography.framework;
 
 import java.awt.image.BufferedImage;
 import java.io.File;
@@ -23,12 +23,11 @@ import com.flickr4java.flickr.photosets.Photoset;
 import com.flickr4java.flickr.photosets.PhotosetsInterface;
 import com.flickr4java.flickr.uploader.UploadMetaData;
 import com.flickr4java.flickr.uploader.Uploader;
+import com.sun.prism.impl.Disposer.Record;
 
-import vikas.photography.framework.CommonUtils;
-import vikas.photography.framework.Database.Record;
 
 /**
- * A utility class that provides a good interface to the FlickrAPI
+ * A utility class that provides a good interface to the required subset of the FlickrAPI
  * 
  * @author vs0016025
  *
@@ -44,11 +43,10 @@ public class FlickrUtil {
 	static final PhotosetsInterface			photosetInterface	= flickr.getPhotosetsInterface();
 	static final PeopleInterface			peopleInterface		= flickr.getPeopleInterface();
 	static final Uploader					uploader			= flickr.getUploader();
-	static final Collection<Photoset>		albums				= loadPhotoSets();
 	static final HashMap<String, Photoset>	albumMap			= loadAlbumMap();
 	static final GroupList<Group>			groups				= loadUserGroups();
 
-	public Set<String> getAlbumNames() {
+	public static Set<String> getAlbumNames() {
 		return albumMap.keySet();
 	}
 
@@ -58,18 +56,16 @@ public class FlickrUtil {
 	 * @param record
 	 * @throws Exception
 	 */
-	public void upload(Record record) throws Exception {
+	public static void upload(File file) throws Exception {
 		UploadMetaData metaData = new UploadMetaData();
 		metaData.setPublicFlag(true);
-		metaData.setDescription(record.getInfo());
+		metaData.setDescription("");
 		metaData.setContentType(Flickr.CONTENTTYPE_PHOTO);
 		metaData.setSafetyLevel(Flickr.SAFETYLEVEL_SAFE);
-		metaData.setTitle(makeSafeFilename(record.getTitle()));
+		metaData.setTitle(makeSafeFilename(""));
 
-		File f = new File(record.getAbsolutePath());
-
-		String photoId = uploader.upload(f, metaData);
-		if (photoId != null) {
+		String photoId = uploader.upload(file, metaData);
+/*		if (photoId != null) {
 			for (String album : record.getAlbums()) {
 				if (!albumMap.containsKey(album)) {
 					photosetInterface.create(album, album, photoId);
@@ -78,8 +74,7 @@ public class FlickrUtil {
 				}
 			}
 		}
-		record.setFlickrPhotoId(photoId);
-	}
+*/	}
 
 	/**
 	 * Get the corresponding image from Flickr
@@ -92,7 +87,13 @@ public class FlickrUtil {
 		return photosInterface.getImage(photosInterface.getPhoto(photoId).getLargeUrl());
 	}
 
-	private String makeSafeFilename(String input) {
+	/**
+	 * Remove unwanted characters from the input string.
+	 * 
+	 * @param input
+	 * @return
+	 */
+	private static String makeSafeFilename(String input) {
 		byte[] fname = input.getBytes();
 		byte[] bad = new byte[] { '\\', '/', '"', '*' };
 		byte replace = '_';
@@ -108,6 +109,11 @@ public class FlickrUtil {
 		return new String(fname);
 	}
 
+	/**
+	 * Connect to Flickr using the key/token/secrets obtained from Flickr
+	 * 
+	 * @return
+	 */
 	private static Flickr connect() {
 		String apikey = "";
 		String secret = "";
@@ -126,6 +132,11 @@ public class FlickrUtil {
 		return flickr;
 	}
 
+	/**
+	 * Get the list of albums for the user.
+	 * 
+	 * @return
+	 */
 	private static Collection<Photoset> loadPhotoSets() {
 		try {
 			return photosetInterface.getList(nsid).getPhotosets();
@@ -135,6 +146,11 @@ public class FlickrUtil {
 		return null;
 	}
 
+	/**
+	 * Get the list of groups that the user subscribes.
+	 * 
+	 * @return
+	 */
 	private static GroupList<Group> loadUserGroups() {
 		try {
 			return peopleInterface.getGroups(nsid);
@@ -144,9 +160,10 @@ public class FlickrUtil {
 		return null;
 	}
 
+	
 	private static HashMap<String, Photoset> loadAlbumMap() {
 		HashMap<String, Photoset> map = new HashMap<String, Photoset>();
-		for (Photoset ps : albums) {
+		for (Photoset ps : loadPhotoSets()) {
 			map.put(ps.getTitle(), ps);
 		}
 		return map;

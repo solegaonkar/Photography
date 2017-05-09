@@ -1,4 +1,4 @@
-package vikas.photography.flickr;
+package xyz;
 
 import java.io.File;
 import java.io.IOException;
@@ -16,7 +16,6 @@ import com.flickr4java.flickr.auth.Auth;
 import com.flickr4java.flickr.auth.Permission;
 import com.flickr4java.flickr.photos.Photo;
 import com.flickr4java.flickr.photos.PhotoList;
-import com.flickr4java.flickr.photosets.Photoset;
 
 /*
  * - Java 7 is needed - insert your api- and secretkey
@@ -78,16 +77,16 @@ public class FlickrCrawler {
 
 	public static void main(String[] args) throws FlickrException {
 
-		String apikey = "7bd31a0709dd56f4e188aa72c290e5e6";
-		String secret = "8d4ffb3ed2390abc";
+		String apikey = "";
+		String secret = "";
 
 		Flickr flickr = new Flickr(apikey, secret, new REST());
 
 		RequestContext requestContext = RequestContext.getRequestContext();
         Auth auth = new Auth();
         auth.setPermission(Permission.READ);
-        auth.setToken("72157680421952292-3a50f8a04719106c");
-        auth.setTokenSecret("7df9bf8e408d55c9");
+        auth.setToken("");
+        auth.setTokenSecret("");
         requestContext.setAuth(auth);
 
         path = "pics";

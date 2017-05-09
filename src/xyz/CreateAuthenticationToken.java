@@ -1,4 +1,4 @@
-package vikas.photography.flickr;
+package xyz;
 
 import com.flickr4java.flickr.Flickr;
 import com.flickr4java.flickr.FlickrException;

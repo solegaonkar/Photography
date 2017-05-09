@@ -1,4 +1,4 @@
-package vikas.photography.framework;
+package org.github.solegaonkar.photography.framework;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,20 +20,11 @@ public class CommonUtils {
 	static {
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			public void run() {
-				log("Shutting Down");
+				// TODO - Add any shutdown tasks
 			}
 		}));
 	}
 
-	/**
-	 * Log to the console
-	 * 
-	 * @param log
-	 */
-	public static void log(String log) {
-		System.out.printf("%s : %s : %s\n", CommonUtils.getTimeStamp(CommonUtils.TIME_FORMAT_3),
-				CommonUtils.getStackElementInfo(3), log);
-	}
 
 	/**
 	 * Get the current timestamp in the given format.
@@ -80,6 +71,7 @@ public class CommonUtils {
 	 * @param e
 	 */
 	public static void exception(Exception e) {
+		e.printStackTrace();
 		StringBuilder sb = new StringBuilder();
 		sb.append(String.format("Exception in thread \"%s\" %s: %s%n", Thread.currentThread().getName(),
 				e.getClass().getName(), e.getMessage()));
@@ -87,7 +79,6 @@ public class CommonUtils {
 			sb.append(String.format("\t at %s.%s(%s:%d)%n", ste.getClassName(), ste.getMethodName(), ste.getFileName(),
 					ste.getLineNumber()));
 		}
-		log(sb.toString());
 		JOptionPane.showMessageDialog(null, sb.toString(), e.getMessage(), JOptionPane.ERROR_MESSAGE);
 		System.exit(0);
 	}
