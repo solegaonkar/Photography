@@ -1,8 +1,13 @@
 package org.github.solegaonkar.photography.framework;
 
+import java.io.BufferedWriter;
 import java.io.File;
-import java.util.LinkedList;
-import java.util.TreeSet;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.util.ArrayList;
+import java.util.HashSet;
+
+import com.google.gson.Gson;
 
 /**
  * The utility class that stores all the data for this application. If required, this can be extended to connect to an
@@ -12,66 +17,227 @@ import java.util.TreeSet;
  *
  */
 public final class Database {
-	private static final File				folder			= new File("D:/eclipse/workspace/Photography/images");
-	private static final LinkedList<String>	files			= new LinkedList<String>();
-	private static final LinkedList<Info>	info			= new LinkedList<Info>();
-	private static final TreeSet<Info>		availableImages	= new TreeSet<Info>();
-	private static int						index			= 0;
+	private static final String	BaseDirectory	= System.getProperty("user.dir");
+	private static final String	JsonFile		= BaseDirectory + File.separator + "db.json";
+	private static final String	ImagesPath		= BaseDirectory + File.separator + "images";
 
-	public static void start() throws Exception {
-		listFilesForFolder(folder);
+	private static final Gson	gson			= new Gson();
+	private static Database		db				= null;
+	private static int			index			= 0;
+
+	private ArrayList<Record>	records;
+
+	static {
+		try {
+			File jf = new File(JsonFile);
+			if (jf.exists()) {
+				db = gson.fromJson(new FileReader(jf), Database.class);
+				if (db == null)
+					db = new Database();
+				if (db.records == null)
+					db.records = new ArrayList<Record>();
+				// Cleanup any files that the user deleted from file system
+				db.records.removeIf(a -> !new File(a.path).exists());
+				// Look for any new files that may have come in.
+			} else {
+				db = new Database();
+				db.records = new ArrayList<Record>();
+			}
+			scanJpgFiles(new File(ImagesPath));
+		} catch (Exception e) {
+			CommonUtils.exception(e);
+		}
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
 			@Override
 			public void run() {
-				// TODO Save files and info
+				try {
+					BufferedWriter bw = new BufferedWriter(new FileWriter(JsonFile));
+					bw.write(gson.toJson(db));
+					bw.close();
+				} catch (Exception e) {
+					CommonUtils.exception(e);
+				}
 			}
 		}));
 	}
 
-	private static void listFilesForFolder(File folder) throws Exception {
+	public static Database getDb() {
+		return db;
+	}
+
+	private static void scanJpgFiles(File folder) throws Exception {
 		for (File fileEntry : folder.listFiles()) {
 			if (fileEntry.isDirectory()) {
-				listFilesForFolder(fileEntry);
+				scanJpgFiles(fileEntry);
 			} else {
 				if (fileEntry.getAbsolutePath().substring(fileEntry.getAbsolutePath().length() - 4)
 						.equalsIgnoreCase(".jpg")) {
-					files.add(fileEntry.getAbsolutePath());
+					Record r = new Record(fileEntry.getAbsolutePath());
+					if (!db.records.contains(r)) {
+						db.records.add(r);
+					}
 				}
 			}
 		}
 	}
 
-	public static String next() {
-		if (++index >= files.size())
+	public Record next() {
+		if (++index >= records.size())
 			index = 0;
 		return get();
 	}
 
-	public static String prev() {
+	public Record prev() {
 		if (--index < 0)
-			index = files.size() - 1;
+			index = records.size() - 1;
 		return get();
 	}
 
-	public static String get() {
-		return files.get(index);
+	public Record get() {
+		return records.isEmpty() ? null : records.get(index);
 	}
 
-	public static String getTitle() {
-		return info.get(index).title;
+	public HashSet<String> getAlbums() {
+		HashSet<String> set = new HashSet<String>();
+		records.forEach(r -> set.addAll(r.albums));
+		return set;
 	}
 
-	public static String getDescription() {
-		return info.get(index).description;
-	}
+	static class Record {
+		private String			path		= null;
+		private String			title		= "Title";
+		private String			description	= "Description";
+		private String			flickrId	= "";
+		private int				rating		= 1;
+		private HashSet<String>	albums		= new HashSet<String>();
 
-	public static String getFlickrId() {
-		return info.get(index).flickrId;
-	}
+		public Record() {
+		}
 
-	private static class Info {
-		String	title		= null;
-		String	description	= null;
-		String	flickrId	= null;
+		public Record(String path) {
+			this.path = path;
+		}
+
+		/**
+		 * (non-Javadoc)
+		 * 
+		 * @see java.lang.Object#hashCode()
+		 */
+		@Override
+		public int hashCode() {
+			if (path != null)
+				return path.hashCode();
+			else
+				return 0;
+		}
+
+		/**
+		 * (non-Javadoc)
+		 * 
+		 * @see java.lang.Object#equals(java.lang.Object)
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			} else if (path == null || obj == null) {
+				return false;
+			} else if (obj instanceof String) {
+				return path.equals(obj);
+			} else if (obj instanceof Record) {
+				Record other = (Record) obj;
+				return path.equals(other.path);
+			}
+			return false;
+		}
+
+		/**
+		 * @return the path
+		 */
+		public final String getPath() {
+			return path;
+		}
+
+		/**
+		 * @param path
+		 * the path to set
+		 */
+		public final void setPath(String path) {
+			this.path = path;
+		}
+
+		/**
+		 * @return the title
+		 */
+		public final String getTitle() {
+			return title;
+		}
+
+		/**
+		 * @param title
+		 * the title to set
+		 */
+		public final void setTitle(String title) {
+			this.title = title;
+		}
+
+		/**
+		 * @return the description
+		 */
+		public final String getDescription() {
+			return description;
+		}
+
+		/**
+		 * @param description
+		 * the description to set
+		 */
+		public final void setDescription(String description) {
+			this.description = description;
+		}
+
+		/**
+		 * @return the flickrId
+		 */
+		public final String getFlickrId() {
+			return flickrId;
+		}
+
+		/**
+		 * @param flickrId
+		 * the flickrId to set
+		 */
+		public final void setFlickrId(String flickrId) {
+			this.flickrId = flickrId;
+		}
+
+		/**
+		 * @return the albums
+		 */
+		public final HashSet<String> getAlbums() {
+			return albums;
+		}
+
+		/**
+		 * @param albums
+		 * the albums to set
+		 */
+		public final void setAlbums(HashSet<String> albums) {
+			this.albums = albums;
+		}
+
+		/**
+		 * @return the rating
+		 */
+		public int getRating() {
+			return rating;
+		}
+
+		/**
+		 * @param rating the rating to set
+		 */
+		public void setRating(int rating) {
+			this.rating = rating;
+		}
 	}
 }

@@ -3,21 +3,21 @@ package org.github.solegaonkar.photography.framework;
 import org.github.solegaonkar.photography.ui.UI;
 
 public class Main {
-	private static UI frame = new UI();
+	private static UI ui = new UI();
+	private static Database db = Database.getDb();
 
 	public static void main(String[] args) throws Exception {
-		Database.start();
 		try {
-			loadPhoto(Database.get());
+			ui.setPhotograph(new Photograph(db.get()));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		frame.setVisible(true);
+		ui.setVisible(true);
 	}
 
 	public static void next() {
 		try {
-			loadPhoto(Database.next());
+			ui.setPhotograph(new Photograph(db.next()));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -26,15 +26,10 @@ public class Main {
 
 	public static void prev() {
 		try {
-			loadPhoto(Database.next());
+			ui.setPhotograph(new Photograph(db.prev()));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 		System.gc();
 	}
-
-	private static void loadPhoto(String file) throws Exception {
-		frame.setPhotograph(new Photograph(file));
-	}
-
 }
