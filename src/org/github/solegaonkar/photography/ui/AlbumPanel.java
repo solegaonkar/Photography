@@ -65,7 +65,7 @@ public class AlbumPanel extends JScrollPane {
 				if (albums.containsKey(s)) {
 					JOptionPane.showMessageDialog(null, "This album exists already. Please select it.\n"
 							+ "If you really need a new album, try another name");
-				} else {
+				} else if (!s.isEmpty()) {
 					albums.put(s, true);
 					photograph.getAlbums().add(s);
 					setPhotograph(photograph);

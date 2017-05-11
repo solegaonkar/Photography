@@ -102,8 +102,24 @@ public class Photograph {
 	}
 
 	/**
+	 * Get the Flickr URL for this image
+	 * 
 	 * @return
-	 * @see org.github.solegaonkar.photography.framework.Database.Record#getFlickrId()
+	 * @throws Exception
+	 */
+	public final String getFlickrUrl() {
+		try {
+			return FlickrUtil.getImageUrl(record);
+		} catch (Exception e) {
+			return FlickrUtil.FlickrBaseUrl;
+		}
+	}
+
+	/**
+	 * Get the FlickrId for this image
+	 * 
+	 * @return
+	 * @throws Exception
 	 */
 	public final String getFlickrId() {
 		return record.getFlickrId();
@@ -133,5 +149,8 @@ public class Photograph {
 		record.setRating(rating);
 	}
 
-	
+	public void uploadToFlickr() throws Exception {
+		FlickrUtil.upload(record);
+	}
+
 }

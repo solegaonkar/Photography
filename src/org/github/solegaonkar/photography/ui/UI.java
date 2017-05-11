@@ -2,12 +2,14 @@ package org.github.solegaonkar.photography.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Desktop;
 import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.net.URI;
 
 import javax.swing.JButton;
 import javax.swing.JCheckBoxMenuItem;
@@ -25,11 +27,11 @@ import javax.swing.ScrollPaneConstants;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.github.solegaonkar.photography.framework.Main;
 import org.github.solegaonkar.photography.framework.Photograph;
-import javax.swing.event.ChangeListener;
-import javax.swing.event.ChangeEvent;
 
 public class UI extends JFrame {
 	private static final long		serialVersionUID	= 8399597753813992046L;
@@ -38,7 +40,6 @@ public class UI extends JFrame {
 	private JPanel					contentPane;
 	private ImagePanel				imagePanel			= new ImagePanel();
 	private JPanel					panelCenter			= new JPanel();
-
 	private final JMenuBar			menuBar				= new JMenuBar();
 	private final JMenu				mnFile				= new JMenu("File");
 	private final JMenuItem			mntmExit			= new JMenuItem("Exit");
@@ -65,6 +66,7 @@ public class UI extends JFrame {
 	private final JButton			btnFlickr			= new JButton("Upload");
 	private final JPanel			panelButtons1		= new JPanel();
 	private final JPanel			panelButtons2		= new JPanel();
+	private final Desktop			desktop				= Desktop.isDesktopSupported() ? Desktop.getDesktop() : null;
 
 	/**
 	 * Create the frame.
@@ -74,7 +76,7 @@ public class UI extends JFrame {
 		txtTitle.setFont(new Font("Consolas", Font.PLAIN, 12));
 		txtTitle.setText("Title");
 		txtTitle.setColumns(0);
-		txtTitle.addFocusListener(new FocusListener(){
+		txtTitle.addFocusListener(new FocusListener() {
 			@Override
 			public void focusGained(FocusEvent e) {
 			}
@@ -82,7 +84,8 @@ public class UI extends JFrame {
 			@Override
 			public void focusLost(FocusEvent e) {
 				photograph.setTitle(txtTitle.getText());
-			}});
+			}
+		});
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e1) {
@@ -149,10 +152,12 @@ public class UI extends JFrame {
 		btnFlickr.addActionListener(new ActionListener() {
 			@Override
 			public void actionPerformed(ActionEvent e) {
-				if (photograph.getFlickrId().isEmpty()) {
-					// upload
-				} else {
-					// show in browser
+				try {
+					if (photograph.getFlickrId().isEmpty())
+						photograph.uploadToFlickr();
+					else
+						desktop.browse(URI.create(photograph.getFlickrUrl()));
+				} catch (Exception e1) {
 				}
 			}
 		});
@@ -194,7 +199,6 @@ public class UI extends JFrame {
 		});
 
 		panelInformation.add(txtTitle, BorderLayout.NORTH);
-
 		setMinimumSize(new Dimension(640, 640));
 	}
 
@@ -221,10 +225,9 @@ public class UI extends JFrame {
 		slider.setValue(photograph.getRating());
 		txtTitle.setText(photograph.getTitle());
 		txtDescription.setText(photograph.getDescription());
-		if (photograph.getFlickrId().isEmpty()) {
+		if (photograph.getFlickrId().isEmpty())
 			btnFlickr.setText("Upload to Flickr");
-		} else {
+		else
 			btnFlickr.setText("View on Flickr");
-		}
 	}
 }

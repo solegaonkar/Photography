@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.Set;
 
+import org.github.solegaonkar.photography.framework.Database.Record;
+
 import com.flickr4java.flickr.Flickr;
 import com.flickr4java.flickr.FlickrException;
 import com.flickr4java.flickr.REST;
@@ -23,8 +25,6 @@ import com.flickr4java.flickr.photosets.Photoset;
 import com.flickr4java.flickr.photosets.PhotosetsInterface;
 import com.flickr4java.flickr.uploader.UploadMetaData;
 import com.flickr4java.flickr.uploader.Uploader;
-import com.sun.prism.impl.Disposer.Record;
-
 
 /**
  * A utility class that provides a good interface to the required subset of the FlickrAPI
@@ -33,8 +33,9 @@ import com.sun.prism.impl.Disposer.Record;
  *
  */
 public class FlickrUtil {
+	public static final String				FlickrBaseUrl		= "http://flickr.com";
 	static final String						nsid				= "";
-	static final String						userName			= "Vikas Solegaonkar";
+	static final String						userName			= "";
 	static final Flickr						flickr				= connect();
 	static final ActivityInterface			activityInterface	= flickr.getActivityInterface();
 	static final FavoritesInterface			favoritesInterface	= flickr.getFavoritesInterface();
@@ -56,25 +57,33 @@ public class FlickrUtil {
 	 * @param record
 	 * @throws Exception
 	 */
-	public static void upload(File file) throws Exception {
+	public static void upload(Record record) throws Exception {
 		UploadMetaData metaData = new UploadMetaData();
 		metaData.setPublicFlag(true);
-		metaData.setDescription("");
+		metaData.setDescription(record.getDescription());
 		metaData.setContentType(Flickr.CONTENTTYPE_PHOTO);
 		metaData.setSafetyLevel(Flickr.SAFETYLEVEL_SAFE);
-		metaData.setTitle(makeSafeFilename(""));
+		metaData.setTitle(makeSafeFilename(record.getTitle()));
 
-		String photoId = uploader.upload(file, metaData);
-/*		if (photoId != null) {
+		String flickrId = uploader.upload(new File(record.getPath()), metaData);
+		if (flickrId != null) {
+			record.setFlickrId(flickrId);
 			for (String album : record.getAlbums()) {
 				if (!albumMap.containsKey(album)) {
-					photosetInterface.create(album, album, photoId);
+					photosetInterface.create(album, album, flickrId);
 				} else {
-					photosetInterface.addPhoto(albumMap.get(album).getId(), photoId);
+					photosetInterface.addPhoto(albumMap.get(album).getId(), flickrId);
 				}
 			}
 		}
-*/	}
+	}
+
+	public static String getImageUrl(Record record) throws Exception {
+		if (!record.getFlickrId().isEmpty()) {
+			photosInterface.getPhoto(record.getFlickrId()).getUrl();
+		}
+		return "";
+	}
 
 	/**
 	 * Get the corresponding image from Flickr
@@ -160,7 +169,6 @@ public class FlickrUtil {
 		return null;
 	}
 
-	
 	private static HashMap<String, Photoset> loadAlbumMap() {
 		HashMap<String, Photoset> map = new HashMap<String, Photoset>();
 		for (Photoset ps : loadPhotoSets()) {
