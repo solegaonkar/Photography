@@ -24,6 +24,9 @@ Useful utils for managing photos on Android
 * Host a page on the mobile that can absorb image files - Check out https://github.com/solegaonkar/nanohttpd or https://developer.android.com/reference/java/net/ServerSocket.html
 * HTML to drop image files one or many at a time, along with their detials.
 
+## Camera
+* Click images using the camera and absorb the file
+
 ## Image Processing:
 * Read Metadata
 * Library for minor tweaks to the image
@@ -37,10 +40,23 @@ Useful utils for managing photos on Android
 * Push the JSON into database (https://github.com/dizitart/nitrite-database)
 * API to get image sequence based on a query
 
-## Social Media
-* Facebook API to publish on Facebook
-* Instagram API to publish on Instagram
-* Flickr API to publish on Flickr
-* Read the likes / comments on either forums and add to the database
 
+# Schedule
+## Learning
+* Kotlin - 16 Hours
 
+## UI
+* Display Image from external file
+* Display Slides / tiles / lists
+* Show / Get Image information on image click
+* Organize by albums
+```
+AlbumActivity
+    - SlideActivity
+    - TilesActivity
+    - ListActivity
+
+EditImageDetailsActivity
+
+Filter??
+```
